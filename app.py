@@ -196,7 +196,7 @@ def api_download_script():
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".sh", mode="w")
     tmp.write(script); tmp.close()
     return send_file(tmp.name, as_attachment=True,
-                     download_name="setup_nestsshare.sh",
+                     download_name="setup_nestshare.sh",
                      mimetype="text/x-shellscript")
 
 # ── API: Users ─────────────────────────────────────────────────────────────────

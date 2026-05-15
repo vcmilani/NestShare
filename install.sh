@@ -10,7 +10,7 @@ error() { echo -e "${RED}[ERR]${NC}   $*"; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || error "Execute como root: sudo bash install.sh"
 
-INSTALL_DIR="/opt/nestsshare"
+INSTALL_DIR="/opt/nestshare"
 PORT=5000
 
 info "Instalando Python3 e dependências do sistema..."
@@ -26,10 +26,10 @@ python3 -m venv "$INSTALL_DIR/venv"
 "$INSTALL_DIR/venv/bin/pip" install -q -r "$INSTALL_DIR/requirements.txt"
 
 info "Instalando serviço systemd..."
-cp nestsshare.service /etc/systemd/system/
+cp nestshare.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable nestsshare
-systemctl start nestsshare
+systemctl enable nestshare
+systemctl start nestshare
 
 IP=$(hostname -I | awk '{print $1}')
 echo ""
@@ -37,5 +37,5 @@ echo -e "${GREEN}✓ NestShare instalado!${NC}"
 echo ""
 echo "  Acesse: http://${IP}:${PORT}"
 echo ""
-echo "  sudo systemctl status nestsshare"
-echo "  sudo journalctl -u nestsshare -f"
+echo "  sudo systemctl status nestshare"
+echo "  sudo journalctl -u nestshare -f"

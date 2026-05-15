@@ -2,8 +2,8 @@
 set -euo pipefail
 
 VERSION=$(git describe --tags --always 2>/dev/null || git rev-parse --short HEAD)
-OUTPUT="nestsshare-${VERSION}.zip"
+OUTPUT="nestshare-${VERSION}.zip"
 
-git archive --format=zip --prefix=nestsshare/ HEAD -o "$OUTPUT"
+git archive --format=zip --prefix=nestshare/ HEAD -o "$OUTPUT"
 
 echo "Gerado: $OUTPUT"

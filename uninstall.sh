@@ -10,8 +10,8 @@ error() { echo -e "${RED}[ERR]${NC}   $*"; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || error "Execute como root: sudo bash uninstall.sh"
 
-INSTALL_DIR="/opt/nestsshare"
-SERVICE="nestsshare"
+INSTALL_DIR="/opt/nestshare"
+SERVICE="nestshare"
 
 info "Parando e desabilitando serviço..."
 systemctl stop "$SERVICE"    2>/dev/null || warn "Serviço não estava rodando."
