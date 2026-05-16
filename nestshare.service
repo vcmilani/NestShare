@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/nestsshare
-ExecStart=/opt/nestsshare/venv/bin/python app.py
+WorkingDirectory=/opt/nestshare
+ExecStart=/opt/nestshare/venv/bin/python app.py
 Restart=on-failure
 RestartSec=5
 

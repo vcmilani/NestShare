@@ -42,8 +42,8 @@ scp -r nestshare/ usuario@<IP>:~/
 cd nestshare
 sudo bash install.sh
 
-# Acessar
-http://<IP>:5000
+# Acessar (aceite o aviso de certificado auto-assinado no browser)
+https://<IP>:5000
 ```
 
 ## Uso manual
@@ -65,10 +65,13 @@ nestshare/
 │   ├── services.py         # Controle de serviços systemd
 │   └── shares.py           # SMB shares, smb.conf, scripts
 ├── templates/
-│   └── index.html          # Dashboard completo
+│   ├── index.html          # Dashboard completo
+│   └── login.html          # Tela de login
 ├── requirements.txt
-├── nestshare.service      # Systemd unit
-└── install.sh
+├── nestshare.service       # Systemd unit
+├── install.sh              # Instalação (gera certificado SSL)
+├── uninstall.sh            # Remoção completa
+└── release.sh              # Gera ZIP para distribuição
 ```
 
 ## API REST
@@ -88,6 +91,31 @@ nestshare/
 | POST | `/api/disks/mount` | Montar disco |
 | POST | `/api/disks/umount` | Desmontar |
 | POST | `/api/disks/fstab` | Adicionar ao fstab |
+
+## Time Machine
+
+Para ativar um share como destino de Time Machine, crie o share com `time_machine: true` via API:
+
+```bash
+curl -k -b cookies.txt -X POST https://<IP>:5000/api/shares \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "TimeMachine",
+    "path": "/mnt/timemachine",
+    "time_machine": true,
+    "max_size_gb": 500
+  }'
+```
+
+> `max_size_gb` é opcional — omita para sem limite.  
+> O `-k` ignora o aviso de certificado auto-assinado.  
+> Obtenha o cookie de sessão fazendo login primeiro:
+> ```bash
+> curl -k -c cookies.txt -X POST https://<IP>:5000/login \
+>   -d "username=SEU_USUARIO&password=SUA_SENHA"
+> ```
+
+O NestShare já inclui no `[global]` do `smb.conf` as diretivas `vfs objects = catia fruit streams_xattr` e `fruit:aapl = yes`, necessárias para o Time Machine funcionar.
 
 ## Família Nest
 

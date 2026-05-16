@@ -10,12 +10,12 @@ error() { echo -e "${RED}[ERR]${NC}   $*"; exit 1; }
 
 [ "$(id -u)" -eq 0 ] || error "Execute como root: sudo bash install.sh"
 
-INSTALL_DIR="/opt/nestsshare"
+INSTALL_DIR="/opt/nestshare"
 PORT=5000
 
 info "Instalando Python3 e dependências do sistema..."
 apt-get update -qq
-apt-get install -y python3 python3-pip python3-venv libpam0g-dev
+apt-get install -y python3 python3-pip python3-venv libpam0g-dev openssl
 
 info "Copiando arquivos para $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
@@ -25,17 +25,25 @@ info "Criando ambiente virtual e instalando dependências..."
 python3 -m venv "$INSTALL_DIR/venv"
 "$INSTALL_DIR/venv/bin/pip" install -q -r "$INSTALL_DIR/requirements.txt"
 
+info "Gerando certificado SSL auto-assinado..."
+openssl req -x509 -newkey rsa:2048 \
+  -keyout "$INSTALL_DIR/key.pem" \
+  -out    "$INSTALL_DIR/cert.pem" \
+  -days 3650 -nodes \
+  -subj "/CN=$(hostname)" 2>/dev/null
+chmod 600 "$INSTALL_DIR/key.pem"
+
 info "Instalando serviço systemd..."
-cp nestsshare.service /etc/systemd/system/
+cp nestshare.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable nestsshare
-systemctl start nestsshare
+systemctl enable nestshare
+systemctl start nestshare
 
 IP=$(hostname -I | awk '{print $1}')
 echo ""
 echo -e "${GREEN}✓ NestShare instalado!${NC}"
 echo ""
-echo "  Acesse: http://${IP}:${PORT}"
+echo "  Acesse: https://${IP}:${PORT}"
 echo ""
-echo "  sudo systemctl status nestsshare"
-echo "  sudo journalctl -u nestsshare -f"
+echo "  sudo systemctl status nestshare"
+echo "  sudo journalctl -u nestshare -f"

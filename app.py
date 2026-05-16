@@ -196,7 +196,7 @@ def api_download_script():
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".sh", mode="w")
     tmp.write(script); tmp.close()
     return send_file(tmp.name, as_attachment=True,
-                     download_name="setup_nestsshare.sh",
+                     download_name="setup_nestshare.sh",
                      mimetype="text/x-shellscript")
 
 # ── API: Users ─────────────────────────────────────────────────────────────────
@@ -240,4 +240,7 @@ def api_users_disable(name):
     return jsonify({"ok": ok, "error": err})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    _base = os.path.dirname(os.path.abspath(__file__))
+    _cert, _key = os.path.join(_base, "cert.pem"), os.path.join(_base, "key.pem")
+    ssl_context = (_cert, _key) if os.path.exists(_cert) and os.path.exists(_key) else None
+    app.run(host="0.0.0.0", port=5000, debug=False, ssl_context=ssl_context)
