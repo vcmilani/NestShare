@@ -27,9 +27,7 @@ def parse_shares():
             "browseable":   s.get("browseable", "yes"),
             "writeable":    s.get("writeable", s.get("writable", "yes")),
             "valid_users":  s.get("valid users", ""),
-            "time_machine": "fruit:time machine = yes" in open(SMB_CONF).read() and
-                            "time machine" in section.lower() or
-                            s.get("fruit:time machine", "no").lower() == "yes",
+            "time_machine": s.get("fruit:time machine", "no").lower() == "yes",
         })
     return shares
 
@@ -162,6 +160,39 @@ fi
 warn "Usuário '{uname}' criado sem senha — defina com: sudo smbpasswd -a {uname}"
 """
 
+    tm_shares = [s for s in shares if s.get("time_machine")]
+    avahi_cmd = ""
+    if tm_shares:
+        dk_records = "\n".join(
+            f'    <txt-record>dk{i}=adVN={s["name"]},adVF=0x82</txt-record>'
+            for i, s in enumerate(tm_shares)
+        )
+        avahi_xml = f"""<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+  <service>
+    <type>_smb._tcp</type>
+    <port>445</port>
+  </service>
+  <service>
+    <type>_adisk._tcp</type>
+    <port>9</port>
+    <txt-record>sys=waMa=0,adVF=0x100</txt-record>
+{dk_records}
+  </service>
+</service-group>
+"""
+        avahi_xml_esc = avahi_xml.replace("'", "'\\''")
+        avahi_cmd = f"""
+info "Configurando anúncio Bonjour para Time Machine (_adisk._tcp)..."
+mkdir -p /etc/avahi/services
+cat > /etc/avahi/services/samba.service << 'AVAHICONF'
+{avahi_xml_esc}
+AVAHICONF
+systemctl restart avahi-daemon 2>/dev/null || true
+"""
+
     mount_cmds = ""
     for share in shares:
         if share.get("device") and share.get("path"):
@@ -190,6 +221,7 @@ apt-get install -y samba avahi-daemon
 
 info "Configurando pontos de montagem..."
 {mount_cmds}
+{avahi_cmd}
 
 info "Escrevendo /etc/samba/smb.conf..."
 [ -f /etc/samba/smb.conf ] && cp /etc/samba/smb.conf /etc/samba/smb.conf.bak.$(date +%Y%m%d%H%M%S)
